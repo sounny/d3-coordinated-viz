@@ -39,25 +39,27 @@ function setMap(){
     .defer(d3.csv, "data/unitsData.csv")
     .defer(d3.json, "data/Euromap.topojson")
     .defer(d3.json, "data/france.topojson")
-    .await(callback);   
+    .await(callback); 
     
-    function callback(data){
-    [csvData, europe, france] = data;
-    
+    function callback(error, csvdata, europe, france){
+        console.log(csvdata); //reads csvData here
+        
     //create graticule function. Style in .css
     setGraticule(map, path);   
     
-        //translate europe TopoJSON
+        //translate europe TopoJSON.  Q: Why would changing FranceRegions to franceRegions create an error and cause my map not to draw?  I don't call it FranceRegions anywhere else?
     var europeCountries = topojson.feature(europe, europe.objects.EuropeCountries),
             franceRegions = topojson.feature(france, france.objects.FranceRegions).features;
+        console.log(franceRegions) //reads data correctly here
 
     var countries = map.append("path")
         .datum(europeCountries)
         .attr("class", "countries")
         .attr("d", path);
-    
+        console.log(europeCountries); //reads data correctly here
+        
     //join csv data to geoJSON enumeration units
-    franceRegions = joinData(franceRegions, csvData);
+    FranceRegions = joinData(franceRegions, csvData);  //reference error, csvData is not defined???
     
     //create the color scale
     var colorScale = makeColorScaleNB(csvData);
@@ -87,29 +89,31 @@ function setGraticule(map, path){
             .append("path") 
             .attr("class", "gratLines") 
             .attr("d", path); 
-};  
+};  //end of setGraticule (works)
     
-//2-3 Lesson 1, example 2.3 (page 2 of 14) Looping throught the csv and asign each set of csv attributes
-//    values to geojson region
-function joinData(franceRegions, csvData);
-    for (var i=0; i<csvData.length; i++){
-        var csvRegion = csvData[i];
-        var csvKey = csvRegion.adm1_code;
+//2-3 Lesson 1, example 1.1 (page 2 of 14) Looping throught the csv and asign each set of csv attributes
+//    values to geojson region.  Put callback into separate functions per ex 1.3 BUT CAN'T FIGURE OUT HOW TO GET CSVDATA INTO THIS FUNCTION?
+function joinData(franceRegions, csvData){
+    console.log(franceRegions, csvData);
+ for (var i=0; i<csvData.length; i++){
+        var csvRegion = csvData[i];  // the current region
+        var csvKey = csvRegion.adm1_code;   //the csv primary key is adm1_code
         
         //loop through regions to find correct region
         for (var a=0; a<franceRegions.length; a++){
-            var geojsonProps = franceRegions[a].properties;
-            var geojsonKey = geojsonProps.adm1_code;
+            var geojsonProps = franceRegions[a].properties;  //current regions geojson properties
+            var geojsonKey = geojsonProps.adm1_code;  //geojson primary key
             if (geojsonKey == csvKey){
                 attrArray.forEach(function(attr){
-                    var val = parseFloat(csvRegion[attr]);
-                    geojsonProps[attr] = val
+                    var val = parseFloat(csvRegion[attr]);  //get csv attr value
+                    geojsonProps[attr] = val  //asign attr and val to geojson properties
+
                 });
-            };
-        };
+             };
+        }; 
     };
-    
-    return franceRegions;
+    return franceRegions; 
+}; //end of joinData   
 
 //2-3 Lesson 1, example 1.6 Natural Breaks Color scale; returns colorScale for other functions
 function makeColorScaleNB(data){    
@@ -146,7 +150,7 @@ function makeColorScaleNB(data){
     colorScale.domain(domainArray);
     
     return colorScale;
-};
+};  //end of makeColorScaleNB
     
 //function to test data value and return color.  Choropleth accepts props from each enumeration unit in later function
 function choropleth(props, colorScale){
@@ -157,9 +161,9 @@ function choropleth(props, colorScale){
         } else {
             return '#CCC';
         };
-    };
+    }; //end of choropleth
   
-    //function to set enumeration units for the regions, ex 2.3 from 2.2 Lesson 2, drawing geomeetries from spatial data
+    //function to set enumeration units for the regions, ex 2.3 from 2.2 Lesson 2, drawing geometries from spatial data
 function setEnumerationUnits(franceRegions, map, path, colorScale){
     //adds france regions to the map
      var regions = map.selectAll(".regions")
@@ -173,7 +177,7 @@ function setEnumerationUnits(franceRegions, map, path, colorScale){
         .style("fill", function(d){
             return choropleth(d.properties, colorScale); 
         });
-};    
+};   //end of setEnumerationUnits 
 
 //function to create bar chart. Ex. 2.1 through 2.3 from 2.3 LEsson 2
 function setChart(csvData, colorScale){
@@ -248,7 +252,7 @@ function setChart(csvData, colorScale){
     
     // create frame for chart border
     
-};
+};  //end of setChart
     
     
 })(); //last line of main.js
