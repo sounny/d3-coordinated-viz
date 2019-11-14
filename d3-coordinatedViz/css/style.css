@@ -1,5 +1,4 @@
 .axis path,
-
 .axis line {
 	fill: none;
 	stroke: black;
@@ -54,4 +53,15 @@
 	font-family: serif;
 	font-size: 1.5em;
 	font-weight: bold;
+}
+
+.chartBackground {
+    fill: rgba(128,128,128,.2);
+}
+
+.chartFrame {
+    fill: none;
+    stroke: #999;
+    stroke-width: 3px;
+    shape-rendering: crispEdges;
 }

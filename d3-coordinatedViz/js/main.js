@@ -41,8 +41,8 @@ function setMap(){
     .defer(d3.json, "data/france.topojson")
     .await(callback); 
     
-    function callback(error, csvdata, europe, france){
-        console.log(csvdata); //reads csvData here
+    function callback(error, csvData, europe, france){
+        console.log(csvData); //reads csvData here
         
     //create graticule function. Style in .css
     setGraticule(map, path);   
@@ -92,7 +92,7 @@ function setGraticule(map, path){
 };  //end of setGraticule (works)
     
 //2-3 Lesson 1, example 1.1 (page 2 of 14) Looping throught the csv and asign each set of csv attributes
-//    values to geojson region.  Put callback into separate functions per ex 1.3 BUT CAN'T FIGURE OUT HOW TO GET CSVDATA INTO THIS FUNCTION?
+//    values to geojson region.  Put callback into separate functions per ex 1.3 
 function joinData(franceRegions, csvData){
     console.log(franceRegions, csvData);
  for (var i=0; i<csvData.length; i++){
@@ -113,7 +113,7 @@ function joinData(franceRegions, csvData){
         }; 
     };
     return franceRegions; 
-}; //end of joinData   
+}; //end of joinData  (Works)
 
 //2-3 Lesson 1, example 1.6 Natural Breaks Color scale; returns colorScale for other functions
 function makeColorScaleNB(data){    
@@ -150,7 +150,7 @@ function makeColorScaleNB(data){
     colorScale.domain(domainArray);
     
     return colorScale;
-};  //end of makeColorScaleNB
+};  //end of makeColorScaleNB (works)
     
 //function to test data value and return color.  Choropleth accepts props from each enumeration unit in later function
 function choropleth(props, colorScale){
@@ -161,7 +161,7 @@ function choropleth(props, colorScale){
         } else {
             return '#CCC';
         };
-    }; //end of choropleth
+    }; //end of choropleth (works)
   
     //function to set enumeration units for the regions, ex 2.3 from 2.2 Lesson 2, drawing geometries from spatial data
 function setEnumerationUnits(franceRegions, map, path, colorScale){
@@ -177,7 +177,7 @@ function setEnumerationUnits(franceRegions, map, path, colorScale){
         .style("fill", function(d){
             return choropleth(d.properties, colorScale); 
         });
-};   //end of setEnumerationUnits 
+};   //end of setEnumerationUnits (works)
 
 //function to create bar chart. Ex. 2.1 through 2.3 from 2.3 LEsson 2
 function setChart(csvData, colorScale){
@@ -197,7 +197,7 @@ function setChart(csvData, colorScale){
         .attr("height", chartHeight)
         .attr("class", "chart");
     
-//create chart background
+//create chart background DONT' FORGET TO STYLE IN CSS
     var chartBackground = chart.append("rect")
         .attr("class", "chartBackground")
         .attr("width", chartInnerWidth)
@@ -237,7 +237,7 @@ function setChart(csvData, colorScale){
             return choropleth(d, colorScale);
         });
     
-    //create text element for chart title
+    //create text element for chart title; DONT FORGET TO ADD CSS STYLE
     
     var chartTitle = chart.append("text")
         .attr("x", 40)
@@ -246,11 +246,21 @@ function setChart(csvData, colorScale){
         .text("Number of Variable " + expressed[3] + " in each region");
         
     //create vertical axis generator
-    
-    
+    var yAxis = d3.axisLeft()
+        .scale(yScale);
+        
     //place axis
+    var axis = chart.append("g")
+        .attr("class", axis)
+        .attr("transform", translate)
+        .call(yAxis);
     
     // create frame for chart border
+    var chartFrame = chart.append("rect")
+        .attr("class", "chartFrame")
+        .attr("width", chartInnerWidth)
+        .attr("height", chartInnerHeight)
+        .attr("transform", translate);
     
 };  //end of setChart
     
