@@ -7,7 +7,22 @@
 var attrArray = ["varA", "varB", "varC", "varD", "varE"];
 var expressed = attrArray[0];  //initial attribute
 
-
+//chart frame dimensions and scale to size bars proportionally as outlined in ex 1.6, 2-4 Lesson 1
+var chartWidth = window.innerWidth * 0.425,
+    chartHeight = 473,
+    leftPadding = 25,
+    rightPadding = 2,
+    topBottomPadding = 5,
+    chartInnerWidth = chartWidth - leftPadding - rightPadding,
+    chartInnerHeight = chartHeight - topBottomPadding * 2,
+    translate = "translate(" + leftPadding + "," + topBottomPadding + ")";
+    
+//create a scale to size bars proportionally to frame and for axis. 
+//Note csv first column max is 88; check data for max
+var yScale = d3.scaleLinear()
+    .range([chartHeight - 10, 0])
+    .domain([0, 88*1.1]);     
+    
 //execute script when window is loaded and style block
 window.onload = setMap();
 
@@ -163,7 +178,7 @@ function choropleth(props, colorScale){
         };
     }; //end of choropleth (works)
   
-    //function to set enumeration units for the regions, ex 2.3 from 2.2 Lesson 2, drawing geometries from spatial data
+    //function to set enumeration units for the regions, ex 2.3 from 2.2 Lesson 2, drawing geometries from spatial data.  
 function setEnumerationUnits(franceRegions, map, path, colorScale){
     //adds france regions to the map
      var regions = map.selectAll(".regions")
@@ -176,8 +191,19 @@ function setEnumerationUnits(franceRegions, map, path, colorScale){
         .attr("d", path)
         .style("fill", function(d){
             return choropleth(d.properties, colorScale); 
-        });
-};   //end of setEnumerationUnits (works)
+        })
+         //add lines for mouseover and mouseoff and style descriptors to each path per example 2.2 in 2-4 Lesson 2
+        .on("mouseover", function(d){
+            highlight(d.properties);
+        })
+        .on("mouseout", function(d){
+            dehighlight(d.properties);
+        })
+        .on("mousemove", moveLabel);
+    
+     var desc = regions.append("desc")
+    .text('{"stroke": "#000", "stroke-width": "0.5px"}');
+};   //end of setEnumerationUnits 
 
 //function to create bar chart. Ex. 2.1 through 2.3 from 2.3 LEsson 2
 function setChart(csvData, colorScale){
