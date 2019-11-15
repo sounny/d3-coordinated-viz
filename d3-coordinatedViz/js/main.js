@@ -62,7 +62,7 @@ function setMap(){
     //create graticule function. Style in .css
     setGraticule(map, path);   
     
-        //translate europe TopoJSON.  Q: Why would changing FranceRegions to franceRegions create an error and cause my map not to draw?  I don't call it FranceRegions anywhere else?
+        //translate europe TopoJSON.  
     var europeCountries = topojson.feature(europe, europe.objects.EuropeCountries),
             franceRegions = topojson.feature(france, france.objects.FranceRegions).features;
         console.log(franceRegions) //reads data correctly here
@@ -74,7 +74,7 @@ function setMap(){
         console.log(europeCountries); //reads data correctly here
         
     //join csv data to geoJSON enumeration units
-    FranceRegions = joinData(franceRegions, csvData);  //reference error, csvData is not defined???
+    FranceRegions = joinData(franceRegions, csvData);  
     
     //create the color scale
     var colorScale = makeColorScaleNB(csvData);
@@ -84,7 +84,11 @@ function setMap(){
   
         //don't forget to add the chart viz here!
     setChart(csvData, colorScale);
-    };
+    
+        //create dropdown using data
+    createDropdown(csvData);
+        
+    };  //end of callback function
     
 }; //end of setMap
 
@@ -207,14 +211,15 @@ function setEnumerationUnits(franceRegions, map, path, colorScale){
 
 //function to create bar chart. Ex. 2.1 through 2.3 from 2.3 LEsson 2
 function setChart(csvData, colorScale){
-    var chartWidth = window.innerWidth * 0.425,
+    //code from 2.3 Lesson 2; modified in 2-4 as pseudo global variables and declared starting at line 11 so commented out here
+/*    var chartWidth = window.innerWidth * 0.425,
         chartHeight = 473,
         leftPadding = 25,
         rightPadding = 2,
         topBottomPadding = 5,
         chartInnerWidth = chartWidth - leftPadding - rightPadding,
         chartInnerHeight = chartHeight - topBottomPadding * 2,
-        translate = "translate(" + leftPadding + "," + topBottomPadding + ")";
+        translate = "translate(" + leftPadding + "," + topBottomPadding + ")";*/
     
     // create svg element to hold chart; chart class is styled in .css
     var chart = d3.select("body")
@@ -231,11 +236,11 @@ function setChart(csvData, colorScale){
         .attr("transform", translate);
     
     //create scale to size bars proportionally to frame
-    var csvmax = d3.max(csvData, function(d) { return parseFloat(d[expressed]); });
+/*    var csvmax = d3.max(csvData, function(d) { return parseFloat(d[expressed]); });
     console.log(csvmax);
     var yScale = d3.scaleLinear()
         .range ([chartHeight - 10, 0])
-        .domain([0, csvmax + 20]);
+        .domain([0, csvmax + 20]);*/
     
     //set bars for each province
     var bars = chart.selectAll(".bar")
@@ -248,8 +253,13 @@ function setChart(csvData, colorScale){
         .attr("class", function(d){
             return "bar " + d.adm1_code;
         })
-    //example 2.4; adjusting size of bars based on data
-        .attr("width", chartInnerWidth / csvData.length - 1)  
+        .attr("width", chartInnerWidth / csvData.length - 1)
+        .on("mouseover", highlight)
+        .on("mouseout", dehighlight)
+        .on("mosemove", moveLabel);
+    
+    //example 2.4; adjusting size of bars based on data; commented out as these are now called as pseudo global variables
+ /*       .attr("width", chartInnerWidth / csvData.length - 1)  
         .attr("x", function(d, i){
             return i * (chartInnerWidth / csvData.length) + leftPadding;
         })
@@ -262,8 +272,12 @@ function setChart(csvData, colorScale){
         .style("fill", function(d){
             return choropleth(d, colorScale);
         });
+    */
     
-    //create text element for chart title; DONT FORGET TO ADD CSS STYLE
+    var desc = bars.append("desc")
+        .text('{"stroke": "none", "stroke-width": "0px"}');
+    
+    //create text element for chart title; 
     
     var chartTitle = chart.append("text")
         .attr("x", 40)
@@ -288,7 +302,188 @@ function setChart(csvData, colorScale){
         .attr("height", chartInnerHeight)
         .attr("transform", translate);
     
+    //set bar positions, height and color, 2-4, lesson 2
+    updateChart(bars, csvData.length, colorScale);
+    
 };  //end of setChart
+    
+//create dropdown menu for attribute selection interaction. ex 1.1 from 2-4 Lesson 1
+//dropdown styled in CSS - DONT FORGET    
+function createDropdown(csvData){
+    var dropdown = d3.select("body")
+    .append("select")
+    .attr("class", "dropdown")
+    //on event listner from ex 1.4 to listen for interaction on selected elements
+    .on("change", function(){
+        changeAttribute(this.value, csvData)
+    });
+
+    //add initial option in dropdown
+    var titleOption = dropdown.append("option")
+        .attr("class", "titleOption")
+        .attr("disabled", "true")
+        .text("Select Attribute");  //visual affordance so people know what to do
+    
+    //add attribute name options
+    var attrOptions = dropdown.selectAll("attrOptions")
+        .data(attrArray)  //pseudo global variable that holds array of attribute names
+        .enter()
+        .append("option")
+        .attr("value", function(d){return d})
+        .text(function(d){return d});
+    
+}; //end of createDropdown
+    
+ //dropdown event listner handler    
+function changeAttribute(attribute, csvData){
+    expressed = attribute;
+    
+    //change the yscale dynamically
+    csvmax = d3.max(csvData, function(d){return parseFloat(d[expressed]); });
+    yScale = d3.scaleLinear()
+        .range([chartHeight -10, 0])
+        .domain([0, csvmax*1.1]);
+    
+    //update vertical axis
+    d3.select(".axis").remove();
+    var yAxis = d3.axisLeft()
+        .scale(yScale);
+    
+    //place axis
+    var axis = d3.select(".chart")
+        .append("g")
+        .attr("class", "axis")
+        .attr("transform", translate)
+        .call(yAxis);
+    
+    //recreate the color scale; ex 1.4, 1.5 and 1.9 (transitions) from 2-4 Lesson 1
+    var colorScale = makeColorScaleNB(csvData);
+    
+    //recolor enumeration untis
+    var regions = d3.selectAll(".regions")
+        .transition()
+        .duration(1000)
+        .style("fill", function(d){
+            return choropleth(d.properties, colorScale)
+        });
+    
+    //resort, resize and recolor bars usig ex 1.7 from 2-4 Lesson 1adds global pseudo variables
+    var bars = d3.selectAll(".bar")
+        .sort(function(a, b){
+            return b[expressed] - a[expressed];
+        })
+    
+    //transition added per ex 1.10
+        .transition()
+        .delay(function(d, i){
+            return i*20
+        })
+        .duration(500);
+    
+    updateChart(bars, csvData.length, colorScale);
+    
+//function to position, size, and color bars in chart
+function updateChart(bars, n, colorScale){
+    //position bars
+    bars.attr("x", function(d, i){
+            return i * (chartInnerWidth / n) + leftPadding;
+        })
+        //size/resize bars
+        .attr("height", function(d, i){
+            return 463 - yScale(parseFloat(d[expressed]));
+        })
+        .attr("y", function(d, i){
+            return yScale(parseFloat(d[expressed])) + topBottomPadding;
+        })
+        //color/recolor bars
+        .style("fill", function(d){
+            return choropleth(d, colorScale);
+        });
+    
+    //add text to chart title
+    var chartTitle = d3.select(".chartTitle")
+        .text("Number of Variable " + expressed[3] + " in each region");
+};
+
+//function to highlight enumeration units and bars
+function highlight(props){
+    //change stroke
+    var selected = d3.selectAll("." + props.adm1_code)
+        .style("stroke", "blue")
+        .style("stroke-width", "2");
+    
+    setLabel(props);
+};
+
+//function to reset the element style on mouseout
+function dehighlight(props){
+    var selected = d3.selectAll("." + props.adm1_code)
+        .style("stroke", function(){
+            return getStyle(this, "stroke")
+        })
+        .style("stroke-width", function(){
+            return getStyle(this, "stroke-width")
+        });
+    
+    //below Example 2.4 line 21...remove info label
+    d3.select(".infolabel")
+        .remove();
+
+    function getStyle(element, styleName){
+        var styleText = d3.select(element)
+            .select("desc")
+            .text();
+
+        var styleObject = JSON.parse(styleText);
+
+        return styleObject[styleName];
+    };
+};
+
+//function to create dynamic label
+function setLabel(props){
+    //label content
+    var labelAttribute = "<h1>" + props[expressed] +
+        "</h1><b>" + expressed + "</b>";
+
+    //create info label div
+    var infolabel = d3.select("body")
+        .append("div")
+        .attr("class", "infolabel")
+        .attr("id", props.adm1_code + "_label")
+        .html(labelAttribute);
+
+    var regionName = infolabel.append("div")
+        .attr("class", "labelname")
+        .html(props.name);
+};
+
+//function to move info label with mouse
+//Example 2.8 line 1...function to move info label with mouse
+function moveLabel(){
+    //get width of label
+    var labelWidth = d3.select(".infolabel")
+        .node()
+        .getBoundingClientRect()
+        .width;
+
+    //use coordinates of mousemove event to set label coordinates
+    var x1 = d3.event.clientX + 10,
+        y1 = d3.event.clientY - 75,
+        x2 = d3.event.clientX - labelWidth - 10,
+        y2 = d3.event.clientY + 25;
+
+    //horizontal label coordinate, testing for overflow
+    var x = d3.event.clientX > window.innerWidth - labelWidth - 20 ? x2 : x1; 
+    //vertical label coordinate, testing for overflow
+    var y = d3.event.clientY < 75 ? y2 : y1; 
+
+    d3.select(".infolabel")
+        .style("left", x + "px")
+        .style("top", y + "px");
+};
+    
+}  // end of changeAttribute   
     
     
 })(); //last line of main.js
