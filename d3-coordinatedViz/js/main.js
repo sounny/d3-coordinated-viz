@@ -57,7 +57,7 @@ function setMap(){
     .await(callback); 
     
     function callback(error, csvData, europe, france){
-        console.log(csvData); //reads csvData here
+        console.log(csvData); //correctly reads csvData here
         
     //create graticule function. Style in .css
     setGraticule(map, path);   
@@ -113,7 +113,7 @@ function setGraticule(map, path){
 //2-3 Lesson 1, example 1.1 (page 2 of 14) Looping throught the csv and asign each set of csv attributes
 //    values to geojson region.  Put callback into separate functions per ex 1.3 
 function joinData(franceRegions, csvData){
-    console.log(franceRegions, csvData);
+    console.log(franceRegions, csvData);  //correctly reads here
  for (var i=0; i<csvData.length; i++){
         var csvRegion = csvData[i];  // the current region
         var csvKey = csvRegion.adm1_code;   //the csv primary key is adm1_code
@@ -197,13 +197,13 @@ function setEnumerationUnits(franceRegions, map, path, colorScale){
             return choropleth(d.properties, colorScale); 
         })
          //add lines for mouseover and mouseoff and style descriptors to each path per example 2.2 in 2-4 Lesson 2
-        .on("mouseover", function(d){
+ /*       .on("mouseover", function(d){
             highlight(d.properties);
         })
         .on("mouseout", function(d){
             dehighlight(d.properties);
         })
-        .on("mousemove", moveLabel);
+        .on("mousemove", moveLabel);*/
     
      var desc = regions.append("desc")
     .text('{"stroke": "#000", "stroke-width": "0.5px"}');
@@ -235,7 +235,7 @@ function setChart(csvData, colorScale){
         .attr("height", chartInnerHeight)
         .attr("transform", translate);
     
-    //create scale to size bars proportionally to frame
+    //create scale to size bars proportionally to frame; these are now defined as pseudo globals
 /*    var csvmax = d3.max(csvData, function(d) { return parseFloat(d[expressed]); });
     console.log(csvmax);
     var yScale = d3.scaleLinear()
@@ -254,9 +254,10 @@ function setChart(csvData, colorScale){
             return "bar " + d.adm1_code;
         })
         .attr("width", chartInnerWidth / csvData.length - 1)
-        .on("mouseover", highlight)
+    //comment out next 3 lines until I get the setChart function, moveLabel and highlight/dehighlight figured out.
+/*        .on("mouseover", highlight)
         .on("mouseout", dehighlight)
-        .on("mosemove", moveLabel);
+        .on("mousemove", moveLabel);*/
     
     //example 2.4; adjusting size of bars based on data; commented out as these are now called as pseudo global variables
  /*       .attr("width", chartInnerWidth / csvData.length - 1)  
@@ -406,6 +407,7 @@ function updateChart(bars, n, colorScale){
 };
 
 //function to highlight enumeration units and bars
+/*
 function highlight(props){
     //change stroke
     var selected = d3.selectAll("." + props.adm1_code)
@@ -439,6 +441,7 @@ function dehighlight(props){
         return styleObject[styleName];
     };
 };
+*/
 
 //function to create dynamic label
 function setLabel(props){
