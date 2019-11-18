@@ -62,20 +62,26 @@ function setMap(){
      
     //translate states topojson  
     var stateData = topojson.feature(stateData, stateData.objects.collection).features;
+        console.log(stateData);  //reads correctly
         
-    //add state features to map
- 
+    //add state features to map WORKS
+    var stateRegions = map.selectAll(".stateRegions")
+        .data(stateData)
+        .enter()
+        .append("path")
+        .attr("class", function(d) {
+            return "NAME "+ d.properties.state;
+        })
+        .attr("d", path);
         
 //color map when selection made
-        var reColor = makeColorScale(csvData);  //doesn't work because csvData is read as text
+    var reColor = makeColorScale(csvData);  //doesn't work because csvData is read as text
         
-    var stateRegions = stateData.objects.collection.geometries;
-        console.log('stateRegions: ', stateRegions)//reads correctly here
      
-      for (var i=0; i<csvData.length; i++) {
+    for (var i=0; i<csvData.length; i++) {
           var csvRegion = csvData[i];
           var csvStateN = csvRegion.STATE;
-       // console.log('csvStateN: ', csvStateN); //reads correctly here so labels dont' have underscores
+    console.log('csvStateN: ', csvStateN); //reads correctly here 
           
       //loop thru stateRegions and get state names
           for (var a=0; a<stateRegions.length; a++){
@@ -92,24 +98,23 @@ function setMap(){
           };
        };
     
-    //This block doesn't quite work as anticipated; commented out while workign through the topojson translate function
-/*    var states = map.selectAll(".states")
-        .data(topojson.feature(stateData, stateData.objects.collection).features)
+    //This block doesn't quite work as anticipated; 
+    var states = map.selectAll(".states")
         .enter()
         .append("path")
-        .attr("class", "states") //allelulia, it reads correctly up to here
+        .attr("class", "states") 
         .attr("id", function(d){ return d.properties.NAME})
         .attr("d", path) 
-/*        .style("fill", function(d) {
+        .style("fill", function(d) {
             return choropleth(d, reColor);
         })
-        .on("mouseover", highlight)  // works
+        .on("mouseover", highlight)  // doesn't works
         .on("mouseoff", dehighlight) //doesn't work
         .on("mousemove", moveLabel) //doesn't work
         .append("desc").text(function(d) {
             return choropleth(d, reColor);
-        })*/;
-        console.log(states);  //this creates an array with path to #StateNames and ID = States' names*/
+        });
+        console.log(states);  //this creates an array with path to #StateNames and ID = States' names
         
     createDropdown(csvData);
         
