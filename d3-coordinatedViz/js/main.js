@@ -58,10 +58,16 @@ function setMap(){
     .await(callback); 
     
     function callback(error, csvData, stateData){
-        console.log(csvData, stateData); //correctly reads csvData and stateData
+        console.log(csvData, stateData); //correctly reads csvData as array, numbers are text and need to be converted to numbers, and stateData is collection
+     
+    //translate states topojson  
+    var stateData = topojson.feature(stateData, stateData.objects.collection).features;
+        
+    //add state features to map
+ 
         
 //color map when selection made
-        var reColor = makeColorScale(csvData);
+        var reColor = makeColorScale(csvData);  //doesn't work because csvData is read as text
         
     var stateRegions = stateData.objects.collection.geometries;
         console.log('stateRegions: ', stateRegions)//reads correctly here
@@ -69,7 +75,7 @@ function setMap(){
       for (var i=0; i<csvData.length; i++) {
           var csvRegion = csvData[i];
           var csvStateN = csvRegion.STATE;
-        // console.log('csvStateN: ', csvStateN); //reads correctly here
+       // console.log('csvStateN: ', csvStateN); //reads correctly here so labels dont' have underscores
           
       //loop thru stateRegions and get state names
           for (var a=0; a<stateRegions.length; a++){
@@ -86,15 +92,15 @@ function setMap(){
           };
        };
     
-    //plot states on map
-    var states = map.selectAll(".states")
+    //This block doesn't quite work as anticipated; commented out while workign through the topojson translate function
+/*    var states = map.selectAll(".states")
         .data(topojson.feature(stateData, stateData.objects.collection).features)
         .enter()
         .append("path")
         .attr("class", "states") //allelulia, it reads correctly up to here
         .attr("id", function(d){ return d.properties.NAME})
         .attr("d", path) 
-        .style("fill", function(d) {
+/*        .style("fill", function(d) {
             return choropleth(d, reColor);
         })
         .on("mouseover", highlight)  // works
@@ -102,7 +108,8 @@ function setMap(){
         .on("mousemove", moveLabel) //doesn't work
         .append("desc").text(function(d) {
             return choropleth(d, reColor);
-        });
+        })*/;
+        console.log(states);  //this creates an array with path to #StateNames and ID = States' names*/
         
     createDropdown(csvData);
         
