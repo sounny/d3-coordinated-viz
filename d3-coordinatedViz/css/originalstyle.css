@@ -1,0 +1,122 @@
+.axis path,
+.axis line {
+	fill: none;
+	stroke: black;
+	stroke-width: 1px;
+	shape-rendering: crispEdges;
+}
+
+.axis text {
+	font-family: sans-serif;
+	font-size: 1.2em;
+}
+
+.states {
+    fill: #FFF;
+    stroke: #CCC;
+    stroke-width: 2px;
+}
+
+.gratLines {
+    fill: none;
+    stroke: #999;
+    stroke-width: 1px;
+}
+
+.gratBackground {
+    fill: #D5E3ff;
+}
+
+.map {
+    border: medium solid #888;
+    margin: 10px 0 0 20 px;
+}
+
+.chart {
+    background-color: medium solid #999;
+    float: right;
+    margin: 10px 20px 0 0;
+}
+
+.numbers {
+    fill: white;
+    font-family: sans-serif;
+}
+
+.chartTitle {
+    font-family: sans-serif;
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+.title {
+	font-family: serif;
+	font-size: 1.5em;
+	font-weight: bold;
+}
+
+.chartBackground {
+    fill: rgba(128,128,128,.2);
+}
+
+.chartFrame {
+    fill: none;
+    stroke: #999;
+    stroke-width: 3px;
+    shape-rendering: crispEdges;
+}
+
+.dropdown {
+    position: relative;
+    margin-left: 1000px;
+    font-family: sans-serif;
+    font-size: 1em;
+    font-weight: bold;
+    padding: 2px;
+    border: 1px solid #999;
+    box-shadow: 2px 2px 4px #999;
+}
+
+option {
+    font-weight: normal;
+}
+
+.infolabel {
+    position: absolute;
+    height: 50px;
+    min-width: 100px;
+    color: black;
+    background-color: #8c8c8c;
+    border: solid thin black;
+    padding: 5px 10px;
+}
+
+.infolabel h1 {
+    margin: 0 20px 0 0;
+    padding: 0px;
+    display: inline-block;
+    line-height: 1em;
+}
+
+.infolabel b {
+    float: left;
+}
+
+body {
+    padding: 10px;
+    padding-bottom: 60px;
+}
+
+.footer {
+    position: absolute;
+    bottom: 0;
+    height: 60px;
+    width: 100%;
+    background: white;
+}
+
+.container-fluid {
+    position: relative;
+    min-height: 100%;
+    padding-bottom: 20px
+}

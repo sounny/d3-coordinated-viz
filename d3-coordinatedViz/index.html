@@ -1,6 +1,5 @@
 <!--
 Ann Fritz GEOG 575  - October 2019 Lab 2 D3-Demo and Coordinated Viz
-
 -->
 
 <!DOCTYPE html>
@@ -9,7 +8,7 @@ Ann Fritz GEOG 575  - October 2019 Lab 2 D3-Demo and Coordinated Viz
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width">
         <meta name="author" content="Ann Fritz">
-		<title>D3 Lab - Coordinated Viz</title>
+		<title>D3 Lab - AFritz GEOG 575</title>
 
  
 		<!--my stylesheet-->
@@ -24,31 +23,26 @@ Ann Fritz GEOG 575  - October 2019 Lab 2 D3-Demo and Coordinated Viz
         
     <div class="container-fluid">
         <div id="wrapper"> 
-<!--            <div class="intro"> 
-        <h1>Oil Production and Number of Spill Response Staff</h1>
-            <p>In 2017, Texas and North Dakota were #1 and #2, respectively in crude oil production in the United States (excluding offshore Gulf of Mexico reserves).  
-            </p>
-            <p>Even with hiring more staff in the 2017 North Dakota legislature, Texas and North Dakota have a slim ratio of regulatory staff to thousand of barrels oil produced. </p>  
+            <div class="intro"> 
+    
+            <h1>Ten Years of US Oil Production</h1>
+            <p>And a snapshot of number of staff listed as "spill response" and amount of oil produced in 2018.  Oil production values are listed in thousand of barrels oil produced. </p>  
  
-             </div>-->
-<!--
-            <div id="map"></div>
-            <div id="panel"></div>-->  
+             </div>
         </div>
     </div>
- <!-- footer with source data information-->     
-    
-   <hr>
-<!--       <div class="row">
+
+        <!-- footer with source data information-->     
+<!--   <hr>-->
+    <div class="footer">
           <div class="text-center col-lg-6 offset-lg-3">
              <h4> </h4>
-             <p>Ann Fritz &middot; GEOG 575 Lab 2 &middot; 2019 &middot; Oil production, prices and number of spill response staff </p> 
-              <p>Source data found at <a href="http://www.eia.gov/dnav/pet/pet_crd_crpdn_adc_mbbl_a.htm">Energy Information Agency</a>, accessed September 2018.  Number of spill response staff determined through FOIA requests and online searches of spill response staff conducted for top 20 oil producing states, Sept-Oct 2018. </p>
+             <p>Ann Fritz &middot; GEOG 575 Lab 2 &middot; 2019 &middot; Ten years of oil production statistics</p> 
+              <p>Source data found at <a href="http://www.eia.gov/dnav/pet/pet_crd_crpdn_adc_mbbl_a.htm">Energy Information Agency</a>, accessed September 2018. Number of spill response staff determined through FOIA requests and online searches of spill response staff conducted for top 20 oil producing states, Sept-Oct 2018.</p>
           </div>
-       </div>  --> 
+    </div>  
 
-
-<!-- topojson -->
+<!-- topojson library-->
         <script type="text/javascript" src="lib/topojson.js"></script>
          
 <!-- d3 queue library-->
@@ -57,13 +51,14 @@ Ann Fritz GEOG 575  - October 2019 Lab 2 D3-Demo and Coordinated Viz
 <!-- simple statistics hosted-->
         <script type="text/javascript" src="https://unpkg.com/simple-statistics@7.0.2/dist/simple-statistics.min.js"></script>    
         
-<!-- main d3v3 library (hosted)-->
-        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/d3js/4.13.0/d3.min.js"></script>
-
+<!-- main d3v4 library (hosted)
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/d3js/4.13.0/d3.min.js"></script>-->
         
-
-		<!--main js script-->
+         <script type="text/javascript" src="https://d3js.org/d3.v4.js"></script>       
+        
+<!--main js script-->
 		<script type="text/javascript" src="js/main.js"></script>
-        
+ 
 	</body>
+
 </html>
