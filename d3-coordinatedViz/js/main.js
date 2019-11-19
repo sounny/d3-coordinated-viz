@@ -3,16 +3,19 @@
 
 (function(){
 
-//pseudo global variables, attArray variable are 1st row in stateOilProduction.csv
+//pseudo global variables, attArray variable are 1st row in stateOilStaff.csv
 var attrArray = [
     "STATE",
-    "rank_2008",
+    "FID",
     "Yr_2008", 
+    "rank_2008",
     "Yr_2009", 
     "Yr_2010", 
+    "rank_2010",
     "Yr_2010", 
     "Yr_2011", 
     "Yr_2012", 
+    "rank_2012",
     "Yr_2013", 
     "Yr_2014", 
     "Yr_2015",
@@ -58,11 +61,11 @@ function setMap(){
     .await(callback); 
     
     function callback(error, csvData, stateData){
-        console.log(csvData, stateData); //correctly reads csvData as array, numbers are text and need to be converted to numbers, and stateData is collection
+        console.log(csvData, stateData); //correctly reads csvData as array, and stateData as object; in csvData: numbers are text and need to be converted to numbers, stateData is type:collection
      
     //translate states topojson  
     var stateData = topojson.feature(stateData, stateData.objects.collection).features;
-        console.log(stateData);  //reads correctly
+        console.log(stateData);  //reads correctly [52].properties.NAME, where [52]is ID of stateData geojson
         
     //add state features to map WORKS
     var stateRegions = map.selectAll(".stateRegions")
@@ -73,17 +76,14 @@ function setMap(){
             return "NAME "+ d.properties.state;
         })
         .attr("d", path);
-        
-//color map when selection made
-    var reColor = makeColorScale(csvData);  //doesn't work because csvData is read as text
-        
-     
+    
+        // for [3].properties.STATEFP and [x].FID from csvData which one do I loop through to tie the data together? Loop through first, then do the processing on the labels to remove underscores?  I think that's the way...
     for (var i=0; i<csvData.length; i++) {
           var csvRegion = csvData[i];
           var csvStateN = csvRegion.STATE;
-    console.log('csvStateN: ', csvStateN); //reads correctly here 
+    console.log('csvStateN: ', csvStateN); //csvStateN is correctly run as state name with underscores.  Need to remove underscores to get to tie attributes to state name OR add FID to run the join on. 
           
-      //loop thru stateRegions and get state names
+      //loop thru stateRegions and get FP codes. [x].FID from csvData and  [y].properties.STATEFP from geojson
           for (var a=0; a<stateRegions.length; a++){
               
               if (stateRegions[a].properties.NAME == csvStateN){
@@ -94,10 +94,15 @@ function setMap(){
                   };
                   
                   stateRegions[a].properties.name = csvRegion.name;
-              };
+                };
           };
        };
-    
+
+
+        
+//color map when selection made
+    var reColor = makeColorScale(csvData);  //doesn't work because csvData is read as text        
+        
     //This block doesn't quite work as anticipated; 
     var states = map.selectAll(".states")
         .enter()
