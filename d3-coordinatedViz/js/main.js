@@ -5,7 +5,7 @@
 
 //pseudo global variables, attArray variable are 1st row in stateOilStaff.csv
 var attrArray = [
-    "State",
+    //"State",
     "FIPS codes",
     "2008", 
     "Production Rank in 2008",
@@ -77,7 +77,7 @@ function setMap(){
         })
         .attr("d", path);
   
-    stateRegions = joinData(stateRegions, csvData);         
+    var stateRegions = joinData(stateRegions, csvData);         
     var colorScale = makeColorScale(csvData);       
  
     createDropdown(csvData);
@@ -108,12 +108,16 @@ function setGraticule(map, path){
 
 //create a joinData function  
 //  [].properties.STATEFP and [].FID from csvData are primary keys.  Somehow this function is being skpped?
-function joinData(stateRegions, csvData){
-    console.log(csvData);
+//How would I implement this fix to surrmount the string problem I'm having: 
+//    Solution on stackOverflow: You could map the data before you bind it:
+//.data(dataset.map(function(d) { return +d; }))  // but where would this line go??
     
+function joinData(stateRegions, csvData){
+        
     for (var i=0; i<csvData.length; i++) {
           var csvRegion = csvData[i];
-          var csvKey = csvRegion.FID;
+          var csvKey = parseFloat(csvRegion.FID);
+        console.log(csvRegion);
 
           for (var a=0; a<stateRegions.length; a++){
               
@@ -125,7 +129,7 @@ function joinData(stateRegions, csvData){
                   attrArray.forEach(function(attr){
                      var val = parseFloat(csvRegion[attr]);
                     geojsonProps[attr] = val; 
-             
+                      
                   });
             };
         };     
@@ -181,7 +185,7 @@ function makeColorScale(data) {
     for (var i=0; i<data.length; i++){
         
         var val = parseFloat(data[i][expressed]);
-        console.log("val: ", val);
+        console.log("val from makeColorScale function: ", val);
         domainArray.push(val);
     };
     console.log(domainArray);
