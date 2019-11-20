@@ -5,25 +5,25 @@
 
 //pseudo global variables, attArray variable are 1st row in stateOilStaff.csv
 var attrArray = [
-    "STATE",
-    "FID",
-    "Yr_2008", 
-    "rank_2008",
-    "Yr_2009", 
-    "Yr_2010", 
-    "rank_2010",
-    "Yr_2010", 
-    "Yr_2011", 
-    "Yr_2012", 
-    "rank_2012",
-    "Yr_2013", 
-    "Yr_2014", 
-    "Yr_2015",
-    "Yr_2016", 
-    "Yr_2017",
-    "rank_2017",
-    "STAFF",
-    "StaffDIVBarrels"
+    "State",
+    "FIPS codes",
+    "2008", 
+//    "Production Rank in 2008",
+    "2009", 
+    "2010", 
+//    "Production Rank in 2010",
+    "2010", 
+    "2011", 
+    "2012", 
+//    "Production Rank in 2012",
+    "2013", 
+    "2014", 
+    "2015",
+    "2016", 
+    "2017",
+//    "Production Rank in 2017",
+    "Number of Staff responding to oil releases",
+    "Percent of staff per barrels oil produced"
 ];
     
 var expressed = attrArray[0];  //initial attribute
@@ -31,12 +31,11 @@ var expressed = attrArray[0];  //initial attribute
 //execute script when window is loaded and style block
 window.onload = setMap();
 
-// set up choropleth map of US
 function setMap(){
     var width = 960,  
         height = 600;
     
-    //creates container for body of map; 
+    //creates container for map; 
     var map = d3.select("body")
         .append("svg")
         .attr("class", map)
@@ -51,12 +50,12 @@ function setMap(){
     var path = d3.geoPath()
         .projection(projection);
    
-//call graticule function. Style in .css 
+   //call graticule function. Style in .css 
     setGraticule(map, path); 
     
-//use d3.queue to load data
+   //use d3.queue to load data
     d3.queue()
-    .defer(d3.csv, "data/stateOilStaff.csv")
+    .defer(d3.csv, "data/stateOilStaff_noRank.csv")
     .defer(d3.json, "data/states.topojson")
     .await(callback); 
     
@@ -65,63 +64,24 @@ function setMap(){
      
     //translate states topojson  
     var stateData = topojson.feature(stateData, stateData.objects.collection).features;
-        console.log(stateData);  //reads correctly [52].properties.NAME, where [52]is ID of stateData geojson
+        console.log(stateData);  //reads correctly where stateData is object. [52].properties.NAME, where [52]is ID of stateData geojson
         
-    //add state features to map WORKS
+    //add state to map
     var stateRegions = map.selectAll(".stateRegions")
         .data(stateData)
         .enter()
         .append("path")
         .attr("class", function(d) {
-            return "NAME "+ d.properties.state;
+            return "FIPS "+ d.properties.STATEFP; //This was .properties.NAME.  but does this need to be .properties.STATEFP if I'm going to join the data by the FIPS codes rather than the state name? Let's try it out and see
         })
         .attr("d", path);
-    
-        // for [3].properties.STATEFP and [x].FID from csvData which one do I loop through to tie the data together? Loop through first, then do the processing on the labels to remove underscores?  I think that's the way...
-    for (var i=0; i<csvData.length; i++) {
-          var csvRegion = csvData[i];
-          var csvStateN = csvRegion.STATE;
-    console.log('csvStateN: ', csvStateN); //csvStateN is correctly run as state name with underscores.  Need to remove underscores to get to tie attributes to state name OR add FID to run the join on. 
-          
-      //loop thru stateRegions and get FP codes. [x].FID from csvData and  [y].properties.STATEFP from geojson
-          for (var a=0; a<stateRegions.length; a++){
-              
-              if (stateRegions[a].properties.NAME == csvStateN){
-                  for (var key in attrArray){
-                      var attr = attrArray[key];
-                      var val = parseFloat(csvRegion[attr]);
-                      stateRegions[a].properties[attr]=val;
-                  };
-                  
-                  stateRegions[a].properties.name = csvRegion.name;
-                };
-          };
-       };
-
-
-        
-//color map when selection made
-    var reColor = makeColorScale(csvData);  //doesn't work because csvData is read as text        
-        
-    //This block doesn't quite work as anticipated; 
-    var states = map.selectAll(".states")
-        .enter()
-        .append("path")
-        .attr("class", "states") 
-        .attr("id", function(d){ return d.properties.NAME})
-        .attr("d", path) 
-        .style("fill", function(d) {
-            return choropleth(d, reColor);
-        })
-        .on("mouseover", highlight)  // doesn't works
-        .on("mouseoff", dehighlight) //doesn't work
-        .on("mousemove", moveLabel) //doesn't work
-        .append("desc").text(function(d) {
-            return choropleth(d, reColor);
-        });
-        console.log(states);  //this creates an array with path to #StateNames and ID = States' names
-        
+  
+    stateRegions = joinData(stateRegions, csvData);         
+    var colorScale = makeColorScale(csvData);       
+ 
     createDropdown(csvData);
+    
+
         
     };  //end of callback function
     
@@ -145,51 +105,61 @@ function setGraticule(map, path){
             .attr("d", path); 
 };  //end of setGraticule (works)
 
-//create dropdown using html and combining elements    
-function createDropdown(){
+//create a joinData function  
+//  [].properties.STATEFP and [].FID from csvData are primary keys.  Loop through.
+function joinData(stateRegions, csvData){
+    
+    for (var i=0; i<csvData.length; i++) {
+          var csvRegion = csvData[i];
+          var csvKey = csvRegion.FID;
+
+          for (var a=0; a<stateRegions.length; a++){
+              
+              var geojsonProps = stateRegions[a].properties;
+              var geojsonKey = geojsonProps.stateRegions;
+              
+              if (geojsonKey == csvKey) {
+                  
+                  attrArray.forEach(function(attr){
+                     var val = parseFloat(csvRegion[attr]);
+                    geojsonProps[attr] = val; 
+                  });
+            };
+        };     
+    }; 
+    return stateRegions;
+    console.log("stateRegions", stateRegions);
+    console.log("csvData", csvData);
+    
+};    //end of joinData      
+    
+//create dropdown    
+function createDropdown(csvData){
     var dropdown = d3.select("body")
         .append("div")
         .attr("class", "dropdown")
-        .html("<h3>Data Selection:</h3>")
+        .html("<h4>Data Selection:</h3>")
         .append("select")
         .on("change", function(){
             changeAttribute(this.value, csvData)
         });
-    
-    dropdown.selectAll("options")
-        .data(attrArray)
-        .enter()
-        .append("option")
-        .attr("value", function(d) { return d})
-        .text(function(d) {
-            d = d[0].toUpperCase() + d.substring(1,3) + " " + d.substring(3);
-        return d
-    });
-}; //end of createDropdown    
-    
-/*function createDropdown(){
-   // add select Element
-    var dropdown = d3.select("body")
-        .append("body")
-        .attr("class", "dropdown");
-    
-    // add initial option
+ 
     var titleOption = dropdown.append("option")
         .attr("class", "titleOption")
-        .attr("disabled", "true")
+        .attr("class", "true")
         .text("Select Attribute");
     
-    //add attribute options
-    var attrOptions = dropdown.selectAll("attrOptions")
+    var attrOptions = dropdown.selectAll("options")
         .data(attrArray)
         .enter()
         .append("option")
         .attr("value", function(d){ return d})
-        .text(function(d) {return d});
+        .text(function(d){return d});
+
+};  //end of create dropDown
+ 
     
-};  // end of createDropdown  (this version doesn't work)*/
-    
-function makeColorScale(csvData) {
+function makeColorScale(data) {
      var colorClasses = [
         "#edf8e9",
         "#bae4b3",
@@ -201,13 +171,15 @@ function makeColorScale(csvData) {
     //create color scale generator
     var colorScale = d3.scaleThreshold()
         .range(colorClasses);
+
     
     //build array of all values of the expressed attributes
     var domainArray = [];
-    for (var i=0; i<csvData.length; i++){
-        var val = parseFloat(csvData[i][expressed]);
+    for (var i=0; i<data.length; i++){
+        var val = parseInt(data[i][expressed]);
         domainArray.push(val);
     };
+    console.log(data);
     
     //cluster data using ckmeans clustering algorithm to create natural breaks
     var clusters = ss.ckmeans(domainArray, 5);
@@ -223,7 +195,33 @@ function makeColorScale(csvData) {
     colorScale.domain(domainArray);
     
     return colorScale;
-};  //returns colorScale; end of makeColorScale (doesnt' work)
+};  //returns colorScale; end of makeColorScale 
+ 
+function setEnumerationUnits(stateRegions, map, path, colorScale) {
+    var regions = map.selectAll(".regions")
+        .data(stateRegions)
+        .enter()
+        .append("path")
+        .attr("class", function(d){
+            return "regions " + d.properties.stateRegions;
+        })
+        .attr("d", path)
+        .style("fill", function(d){
+            return choropleth(d.properties, colorScale);
+        })
+        .on("mouseover", function(d){
+            highlight(d.properties);
+        })
+        .on("mouseout", function(d){
+            dehighlight(d.properties);
+        })
+        .on("mousemove", moveLabel);
+        
+    var desc = stateRegions.append("desc")
+        .text('{"stroke"}': "#000", "stroke-width": "0.5px");
+}; //end of setEnumerationUnits
+    
+    
     
 function choropleth(d, reColor) {
     var value = d.properties[expressed];
@@ -241,41 +239,5 @@ function changeAttribute(expressed, csvData){
     });
 };  //end changeAttribute    
     
-function highlight(data) {
-    var prop = data.properties;
-    d3.select("#"+prop.NAME)
-        .style("fill", "#ff0");
-    
-    var labelAttribute = "<h1>"+prop[expressed]+"</h1>"+expressed;
-    var labelName = prop.NAME;
-    
-    var infoLabel = d3.select("body")
-        .append("div")
-        .attr("class", "infoLabel")
-        .attr("id", prop.NAME+"label")
-        .html(labelAttribute)
-        .append("div")
-        .attr("class", "labelname")
-        .html(labelName);
-}; //end of function hightlight (works) 
- 
-//dehighlight the state when mouseoff - DOESEN"T WORK 
-function dehighlight(data){
-    var prop = data.properties;
-    var region = d3.select("#"+prop.NAME)
-    var fillcolor = region.select("desc").text();
-    region.style("fill", fillcolor);
-    
-    d3.select("#"+prop.NAME+"label").remove();
-    
-}; //end of dehighlight
-    
-function moveLabel() {
-    var x = d3.event.clientX+10;
-    var y = d3.event.clientY-75;
-    d3.select(".infolabel")
-        .style("margin-left", x+"px")
-        .style("margin-top", y+"px");
-};  //end of moveLabel (doesn't work)
     
 })(); //last line of main.js
