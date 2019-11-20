@@ -8,20 +8,20 @@ var attrArray = [
     "State",
     "FIPS codes",
     "2008", 
-//    "Production Rank in 2008",
+    "Production Rank in 2008",
     "2009", 
     "2010", 
-//    "Production Rank in 2010",
+    "Production Rank in 2010",
     "2010", 
     "2011", 
     "2012", 
-//    "Production Rank in 2012",
+    "Production Rank in 2012",
     "2013", 
     "2014", 
     "2015",
     "2016", 
     "2017",
-//    "Production Rank in 2017",
+    "Production Rank in 2017",
     "Number of Staff responding to oil releases",
     "Percent of staff per barrels oil produced"
 ];
@@ -55,7 +55,8 @@ function setMap(){
     
    //use d3.queue to load data
     d3.queue()
-    .defer(d3.csv, "data/stateOilStaff_noRank.csv")
+    .defer(d3.csv, "data/stateOilStaff.csv")
+   // .defer(d3.csv, "data/stateOilStaff_noRanks.csv")
     .defer(d3.json, "data/states.topojson")
     .await(callback); 
     
@@ -106,8 +107,9 @@ function setGraticule(map, path){
 };  //end of setGraticule (works)
 
 //create a joinData function  
-//  [].properties.STATEFP and [].FID from csvData are primary keys.  Loop through.
+//  [].properties.STATEFP and [].FID from csvData are primary keys.  Somehow this function is being skpped?
 function joinData(stateRegions, csvData){
+    console.log(csvData);
     
     for (var i=0; i<csvData.length; i++) {
           var csvRegion = csvData[i];
@@ -123,12 +125,13 @@ function joinData(stateRegions, csvData){
                   attrArray.forEach(function(attr){
                      var val = parseFloat(csvRegion[attr]);
                     geojsonProps[attr] = val; 
+             
                   });
             };
         };     
     }; 
     return stateRegions;
-    console.log("stateRegions", stateRegions);
+    console.log("geojsonProps", geojsonProps);
     console.log("csvData", csvData);
     
 };    //end of joinData      
@@ -168,7 +171,7 @@ function makeColorScale(data) {
         "#006d2c",
     ];
     
-    //create color scale generator
+    //create color scale generator IS scale threshold the right one to use?
     var colorScale = d3.scaleThreshold()
         .range(colorClasses);
 
@@ -176,13 +179,16 @@ function makeColorScale(data) {
     //build array of all values of the expressed attributes
     var domainArray = [];
     for (var i=0; i<data.length; i++){
-        var val = parseInt(data[i][expressed]);
+        
+        var val = parseFloat(data[i][expressed]);
+        console.log("val: ", val);
         domainArray.push(val);
     };
-    console.log(data);
+    console.log(domainArray);
     
     //cluster data using ckmeans clustering algorithm to create natural breaks
     var clusters = ss.ckmeans(domainArray, 5);
+    console.log(clusters);  //this returns NaN
     
     //set cluster domains to mins
     domainArray = clusters.map(function(d){
@@ -195,6 +201,9 @@ function makeColorScale(data) {
     colorScale.domain(domainArray);
     
     return colorScale;
+    
+    console.log("test1"); //this is not printing to console
+    
 };  //returns colorScale; end of makeColorScale 
  
 function setEnumerationUnits(stateRegions, map, path, colorScale) {
@@ -218,7 +227,8 @@ function setEnumerationUnits(stateRegions, map, path, colorScale) {
         .on("mousemove", moveLabel);
         
     var desc = stateRegions.append("desc")
-        .text('{"stroke"}': "#000", "stroke-width": "0.5px");
+        .text('{"stroke": "#000", "stroke-width": "0.5px"}');
+    console.log("test");
 }; //end of setEnumerationUnits
     
     
